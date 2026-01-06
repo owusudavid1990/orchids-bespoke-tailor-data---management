@@ -12,19 +12,16 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'http',
-      hostname: '**',
-    },
-  ],
-},
-typescript: {
-  ignoreBuildErrors: true,
-},
-  eslint: {
-    ignoreDuringBuilds: true,
+        hostname: '**',
+      },
+    ],
+  },
+  typescript: {
+    ignoreBuildErrors: true,
   },
   turbopack: {
     rules: {
-      "*.{jsx,tsx}": {
+      "src/**/*.{jsx,tsx}": {
         loaders: [LOADER]
       }
     }
@@ -32,3 +29,4 @@ typescript: {
 };
 
 export default nextConfig;
+// Orchids restart: 1767673420680
