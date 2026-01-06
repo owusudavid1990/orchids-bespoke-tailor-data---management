@@ -47,14 +47,13 @@ import {
 import { Upload, Trash2, User as UserIcon, Plus, ImageIcon, Save, Download, Cloud, ShieldCheck } from "lucide-react";
 
 export default function SettingsPage() {
-    const [settings, setSettings] = useState<Settings>({
-      companyName: "",
-      logoUrl: "",
-      backgroundImageUrl: "",
-      address: "",
-      phone: "",
-      email: "",
-    });
+  const [settings, setSettings] = useState<Settings>({
+    companyName: "",
+    logoUrl: "",
+    address: "",
+    phone: "",
+    email: "",
+  });
   const [users, setUsers] = useState<User[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isUserDialogOpen, setIsUserDialogOpen] = useState(false);
@@ -85,43 +84,24 @@ export default function SettingsPage() {
     URL.revokeObjectURL(url);
   };
 
-    const onDropLogo = useCallback((acceptedFiles: File[]) => {
-      const file = acceptedFiles[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setSettings((prev) => ({ ...prev, logoUrl: reader.result as string }));
-        };
-        reader.readAsDataURL(file);
-      }
-    }, []);
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    const file = acceptedFiles[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSettings((prev) => ({ ...prev, logoUrl: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
+  }, []);
 
-    const onDropBg = useCallback((acceptedFiles: File[]) => {
-      const file = acceptedFiles[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setSettings((prev) => ({ ...prev, backgroundImageUrl: reader.result as string }));
-        };
-        reader.readAsDataURL(file);
-      }
-    }, []);
-
-    const logoDropzone = useDropzone({
-      onDrop: onDropLogo,
-      accept: {
-        "image/*": [".png", ".jpg", ".jpeg", ".svg", ".webp"],
-      },
-      maxFiles: 1,
-    });
-
-    const bgDropzone = useDropzone({
-      onDrop: onDropBg,
-      accept: {
-        "image/*": [".png", ".jpg", ".jpeg", ".svg", ".webp"],
-      },
-      maxFiles: 1,
-    });
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      "image/*": [".png", ".jpg", ".jpeg", ".svg", ".webp"],
+    },
+    maxFiles: 1,
+  });
 
   const handleSaveSettings = async () => {
     setIsSaving(true);
@@ -179,94 +159,58 @@ export default function SettingsPage() {
       >
         <Card className="border-stone-200">
           <CardHeader>
-            <CardTitle className="text-xl">Branding</CardTitle>
+            <CardTitle className="text-xl">Company Logo</CardTitle>
             <CardDescription className="font-display">
-              Upload your company logo and background image to personalize the system
+              Upload your company logo to personalize the system
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-8">
-            <div className="space-y-4">
-              <Label className="font-display">Company Logo</Label>
-              <div className="flex items-start gap-6">
-                <div
-                  {...logoDropzone.getRootProps()}
-                  className={`flex-1 border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
-                    logoDropzone.isDragActive
-                      ? "border-stone-400 bg-stone-50"
-                      : "border-stone-200 hover:border-stone-300"
-                  }`}
-                >
-                  <input {...logoDropzone.getInputProps()} />
-                  <Upload className="w-10 h-10 text-stone-400 mx-auto mb-3" />
-                  <p className="text-stone-600">
-                    {logoDropzone.isDragActive
-                      ? "Drop the logo here..."
-                      : "Drag & drop a logo, or click to select"}
-                  </p>
-                </div>
-
-                {settings.logoUrl && (
-                  <div className="relative">
-                    <div className="w-32 h-32 rounded-lg border border-stone-200 overflow-hidden bg-white flex items-center justify-center">
-                      <img
-                        src={settings.logoUrl}
-                        alt="Company Logo"
-                        className="max-w-full max-h-full object-contain"
-                      />
-                    </div>
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      onClick={() => setSettings((prev) => ({ ...prev, logoUrl: "" }))}
-                      className="absolute -top-2 -right-2 h-7 w-7"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                )}
+          <CardContent className="space-y-4">
+            <div className="flex items-start gap-6">
+              <div
+                {...getRootProps()}
+                className={`flex-1 border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
+                  isDragActive
+                    ? "border-stone-400 bg-stone-50"
+                    : "border-stone-200 hover:border-stone-300"
+                }`}
+              >
+                <input {...getInputProps()} />
+                <Upload className="w-10 h-10 text-stone-400 mx-auto mb-3" />
+                <p className="text-stone-600">
+                  {isDragActive
+                    ? "Drop the image here..."
+                    : "Drag & drop a logo, or click to select"}
+                </p>
+                <p className="text-sm text-stone-400 mt-1">
+                  PNG, JPG, SVG or WebP up to 2MB
+                </p>
               </div>
-            </div>
 
-            <div className="space-y-4">
-              <Label className="font-display">Login Background Image</Label>
-              <div className="flex items-start gap-6">
-                <div
-                  {...bgDropzone.getRootProps()}
-                  className={`flex-1 border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
-                    bgDropzone.isDragActive
-                      ? "border-stone-400 bg-stone-50"
-                      : "border-stone-200 hover:border-stone-300"
-                  }`}
-                >
-                  <input {...bgDropzone.getInputProps()} />
-                  <ImageIcon className="w-10 h-10 text-stone-400 mx-auto mb-3" />
-                  <p className="text-stone-600">
-                    {bgDropzone.isDragActive
-                      ? "Drop the image here..."
-                      : "Drag & drop a background photo, or click to select"}
-                  </p>
-                </div>
-
-                {settings.backgroundImageUrl && (
-                  <div className="relative">
-                    <div className="w-32 h-32 rounded-lg border border-stone-200 overflow-hidden bg-white">
-                      <img
-                        src={settings.backgroundImageUrl}
-                        alt="Background"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      onClick={() => setSettings((prev) => ({ ...prev, backgroundImageUrl: "" }))}
-                      className="absolute -top-2 -right-2 h-7 w-7"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+              {settings.logoUrl && (
+                <div className="relative">
+                  <div className="w-32 h-32 rounded-lg border border-stone-200 overflow-hidden bg-white flex items-center justify-center">
+                    <img
+                      src={settings.logoUrl}
+                      alt="Company Logo"
+                      className="max-w-full max-h-full object-contain"
+                    />
                   </div>
-                )}
-              </div>
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    onClick={removeLogo}
+                    className="absolute -top-2 -right-2 h-7 w-7"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
+
+              {!settings.logoUrl && (
+                <div className="w-32 h-32 rounded-lg border border-stone-200 bg-stone-50 flex items-center justify-center">
+                  <ImageIcon className="w-12 h-12 text-stone-300" />
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
