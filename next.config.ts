@@ -15,8 +15,8 @@ const nextConfig: NextConfig = {
         hostname: '**',
       },
     ],
-  },
-  typescript: {
+    },
+    typescript: {
     ignoreBuildErrors: true,
   },
   eslint: {
