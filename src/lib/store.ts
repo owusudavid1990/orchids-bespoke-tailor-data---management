@@ -155,6 +155,7 @@ export interface User {
 export interface Settings {
   companyName: string;
   logoUrl: string;
+  backgroundImageUrl?: string;
   address: string;
   phone: string;
   email: string;
@@ -216,6 +217,7 @@ const defaultUsers: User[] = [
 const defaultSettings: Settings = {
   companyName: 'Bespoke Tailoring House',
   logoUrl: '',
+  backgroundImageUrl: '',
   address: '',
   phone: '',
   email: '',
