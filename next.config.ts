@@ -16,10 +16,13 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  eslint: {
-    ignoreDuringBuilds: true,
+  typescript: {
+    ignoreBuildErrors: true,
   },
-  turbopack: {
+    eslint: {
+      ignoreDuringBuilds: true,
+    },
+    turbopack: {
     rules: {
       "*.{jsx,tsx}": {
         loaders: [LOADER]

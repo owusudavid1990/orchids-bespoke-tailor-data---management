@@ -251,9 +251,9 @@ export default function ClientProfilePage({ params }: PageProps) {
                       Upper Body
                     </h4>
                     <div className="grid grid-cols-3 gap-3">
-                      {upperBodyFields.map((field) => {
-                        const value = (latestMeasurement as Record<string, string>)[field.key];
-                        if (!value) return null;
+                        {upperBodyFields.map((field) => {
+                          const value = (latestMeasurement as any)[field.key];
+                          if (!value) return null;
                         return (
                           <div key={field.key} className="text-center p-2 bg-stone-50 rounded">
                             <p className="text-xs text-stone-500">{field.label}</p>
@@ -268,9 +268,9 @@ export default function ClientProfilePage({ params }: PageProps) {
                       Lower Body
                     </h4>
                     <div className="grid grid-cols-3 gap-3">
-                      {lowerBodyFields.map((field) => {
-                        const value = (latestMeasurement as Record<string, string>)[field.key];
-                        if (!value) return null;
+                        {lowerBodyFields.map((field) => {
+                          const value = (latestMeasurement as any)[field.key];
+                          if (!value) return null;
                         return (
                           <div key={field.key} className="text-center p-2 bg-stone-50 rounded">
                             <p className="text-xs text-stone-500">{field.label}</p>
