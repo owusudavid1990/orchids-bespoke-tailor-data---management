@@ -3,6 +3,7 @@ import { Cinzel, Inter } from "next/font/google";
 import "./globals.css";
 import VisualEditsMessenger from "../visual-edits/VisualEditsMessenger";
 import ErrorReporter from "@/components/ErrorReporter";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import Script from "next/script";
 
 const cinzel = Cinzel({
@@ -28,7 +29,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${cinzel.variable} ${inter.variable}`}>
+    <html lang="en" className={`${cinzel.variable} ${inter.variable}`} suppressHydrationWarning>
       <body className="antialiased font-sans">
         <Script
           id="orchids-browser-logs"
@@ -47,7 +48,9 @@ export default function RootLayout({
           data-debug="true"
           data-custom-data='{"appName": "YourApp", "version": "1.0.0", "greeting": "hi"}'
         />
-        {children}
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
         <VisualEditsMessenger />
       </body>
     </html>
