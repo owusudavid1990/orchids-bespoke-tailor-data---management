@@ -967,9 +967,8 @@ export default function MeasurementsPage() {
                         <div className="flex -space-x-2 overflow-hidden">
                           {measurement.photos?.slice(0, 3).map((photo) => (
                             <div key={photo.id} className="inline-block h-8 w-8 rounded-full ring-2 ring-white overflow-hidden">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={photo.url} alt={photo.label} className="h-full w-full object-cover" />
-                            </div>
+                                <img src={photo.url} alt={photo.label} className="h-full w-full object-cover" />
+                              </div>
                           ))}
                           {measurement.photos && measurement.photos.length > 3 && (
                             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-stone-100 ring-2 ring-white text-[10px] font-display text-stone-400">

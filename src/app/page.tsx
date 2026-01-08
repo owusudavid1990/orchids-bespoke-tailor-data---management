@@ -15,9 +15,11 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [settings, setSettings] = useState<Settings | null>(null);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
+    setMounted(true);
     initializeStore();
     setSettings(getSettings());
   }, []);
@@ -37,6 +39,12 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   };
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a]" />
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] selection:bg-stone-800">
