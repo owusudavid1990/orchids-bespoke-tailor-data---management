@@ -82,17 +82,18 @@ export default function MeasurementDocketPage({ params }: PageProps) {
     { key: "rise", label: "Rise" },
   ];
 
-  const garmentOptions = [
-    { label: "Lapel Style", value: measurement.lapelStyle },
-    { label: "Button Style", value: measurement.buttonStyle },
-    { label: "Jacket Length", value: measurement.jacketLengthOption },
-    { label: "Pocket Style", value: measurement.pocketStyle },
-    { label: "Vent Style", value: measurement.ventStyle },
-    { label: "Lining Type", value: measurement.liningType },
-    { label: "Trouser Style", value: measurement.trouserStyle },
-    { label: "Trouser Fit", value: measurement.trouserFit },
-    { label: "Cuff Style", value: measurement.cuffStyle },
-  ].filter(opt => opt.value);
+    const garmentOptions = ([
+      { label: "Lapel Style", value: measurement.lapelStyle },
+      { label: "Button Style", value: measurement.buttonStyle },
+      { label: "Jacket Length", value: measurement.jacketLengthOption },
+      { label: "Pocket Style", value: measurement.pocketStyle },
+      { label: "Vent Style", value: measurement.ventStyle },
+      { label: "Lining Type", value: measurement.liningType },
+      { label: "Trouser Style", value: measurement.trouserStyle },
+      { label: "Trouser Fit", value: measurement.trouserFit },
+      { label: "Cuff Style", value: measurement.cuffStyle },
+    ] as any[]).filter(opt => opt.value);
+
 
   return (
     <>

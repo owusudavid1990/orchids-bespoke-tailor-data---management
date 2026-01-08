@@ -46,14 +46,16 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Upload, Trash2, User as UserIcon, Plus, ImageIcon, Save, Download, Cloud, ShieldCheck } from "lucide-react";
 
-export default function SettingsPage() {
-  const [settings, setSettings] = useState<Settings>({
-    companyName: "",
-    logoUrl: "",
-    address: "",
-    phone: "",
-    email: "",
-  });
+  export default function SettingsPage() {
+    const [settings, setSettings] = useState<Settings>({
+      companyName: "",
+      logoUrl: "",
+      backgroundUrl: "",
+      address: "",
+      phone: "",
+      email: "",
+    });
+
   const [users, setUsers] = useState<User[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isUserDialogOpen, setIsUserDialogOpen] = useState(false);
@@ -84,24 +86,48 @@ export default function SettingsPage() {
     URL.revokeObjectURL(url);
   };
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    const file = acceptedFiles[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setSettings((prev) => ({ ...prev, logoUrl: reader.result as string }));
-      };
-      reader.readAsDataURL(file);
-    }
-  }, []);
+    const onDrop = useCallback((acceptedFiles: File[]) => {
+      const file = acceptedFiles[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setSettings((prev) => ({ ...prev, logoUrl: reader.result as string }));
+        };
+        reader.readAsDataURL(file);
+      }
+    }, []);
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: {
-      "image/*": [".png", ".jpg", ".jpeg", ".svg", ".webp"],
-    },
-    maxFiles: 1,
-  });
+    const onDropBackground = useCallback((acceptedFiles: File[]) => {
+      const file = acceptedFiles[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setSettings((prev) => ({ ...prev, backgroundUrl: reader.result as string }));
+        };
+        reader.readAsDataURL(file);
+      }
+    }, []);
+
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({
+      onDrop,
+      accept: {
+        "image/*": [".png", ".jpg", ".jpeg", ".svg", ".webp"],
+      },
+      maxFiles: 1,
+    });
+
+    const { 
+      getRootProps: getBgRootProps, 
+      getInputProps: getBgInputProps, 
+      isDragActive: isBgDragActive 
+    } = useDropzone({
+      onDrop: onDropBackground,
+      accept: {
+        "image/*": [".png", ".jpg", ".jpeg", ".svg", ".webp"],
+      },
+      maxFiles: 1,
+    });
+
 
   const handleSaveSettings = async () => {
     setIsSaving(true);
@@ -133,88 +159,141 @@ export default function SettingsPage() {
     setUsers(getUsers());
   };
 
-  const removeLogo = () => {
-    setSettings((prev) => ({ ...prev, logoUrl: "" }));
-  };
+    const removeLogo = () => {
+      setSettings((prev) => ({ ...prev, logoUrl: "" }));
+    };
 
-  return (
-    <div className="space-y-8 max-w-4xl">
-      <div>
-        <motion.h1
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-3xl text-stone-900"
-        >
-          Settings
-        </motion.h1>
-        <p className="text-stone-500 mt-1">
-          Manage your tailoring house settings
-        </p>
-      </div>
+    const removeBackground = () => {
+      setSettings((prev) => ({ ...prev, backgroundUrl: "" }));
+    };
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-      >
-        <Card className="border-stone-200">
-          <CardHeader>
-            <CardTitle className="text-xl">Company Logo</CardTitle>
-            <CardDescription className="font-display">
-              Upload your company logo to personalize the system
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-start gap-6">
-              <div
-                {...getRootProps()}
-                className={`flex-1 border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
-                  isDragActive
-                    ? "border-stone-400 bg-stone-50"
-                    : "border-stone-200 hover:border-stone-300"
-                }`}
-              >
-                <input {...getInputProps()} />
-                <Upload className="w-10 h-10 text-stone-400 mx-auto mb-3" />
-                <p className="text-stone-600">
-                  {isDragActive
-                    ? "Drop the image here..."
-                    : "Drag & drop a logo, or click to select"}
-                </p>
-                <p className="text-sm text-stone-400 mt-1">
-                  PNG, JPG, SVG or WebP up to 2MB
-                </p>
-              </div>
+    return (
+      <div className="space-y-8 max-w-4xl">
+        <div>
+          <motion.h1
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-3xl text-stone-900"
+          >
+            Settings
+          </motion.h1>
+          <p className="text-stone-500 mt-1">
+            Manage your tailoring house settings
+          </p>
+        </div>
 
-              {settings.logoUrl && (
-                <div className="relative">
-                  <div className="w-32 h-32 rounded-lg border border-stone-200 overflow-hidden bg-white flex items-center justify-center">
-                    <img
-                      src={settings.logoUrl}
-                      alt="Company Logo"
-                      className="max-w-full max-h-full object-contain"
-                    />
-                  </div>
-                  <Button
-                    variant="destructive"
-                    size="icon"
-                    onClick={removeLogo}
-                    className="absolute -top-2 -right-2 h-7 w-7"
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <Card className="border-stone-200 h-full">
+              <CardHeader>
+                <CardTitle className="text-xl">Company Logo</CardTitle>
+                <CardDescription className="font-display">
+                  Upload your logo for the system
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex flex-col gap-4">
+                  <div
+                    {...getRootProps()}
+                    className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+                      isDragActive
+                        ? "border-stone-400 bg-stone-50"
+                        : "border-stone-200 hover:border-stone-300"
+                    }`}
                   >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              )}
+                    <input {...getInputProps()} />
+                    <Upload className="w-8 h-8 text-stone-400 mx-auto mb-2" />
+                    <p className="text-sm text-stone-600">
+                      {isDragActive ? "Drop here" : "Click to upload logo"}
+                    </p>
+                  </div>
 
-              {!settings.logoUrl && (
-                <div className="w-32 h-32 rounded-lg border border-stone-200 bg-stone-50 flex items-center justify-center">
-                  <ImageIcon className="w-12 h-12 text-stone-300" />
+                  {settings.logoUrl ? (
+                    <div className="relative w-full aspect-square max-w-[120px] mx-auto rounded-lg border border-stone-200 overflow-hidden bg-white flex items-center justify-center">
+                      <img
+                        src={settings.logoUrl}
+                        alt="Company Logo"
+                        className="max-w-full max-h-full object-contain p-2"
+                      />
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        onClick={removeLogo}
+                        className="absolute top-1 right-1 h-6 w-6"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="w-full aspect-square max-w-[120px] mx-auto rounded-lg border border-stone-200 bg-stone-50 flex items-center justify-center">
+                      <ImageIcon className="w-10 h-10 text-stone-300" />
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+          >
+            <Card className="border-stone-200 h-full">
+              <CardHeader>
+                <CardTitle className="text-xl">Login Background</CardTitle>
+                <CardDescription className="font-display">
+                  Personalize your login screen
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex flex-col gap-4">
+                  <div
+                    {...getBgRootProps()}
+                    className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+                      isBgDragActive
+                        ? "border-stone-400 bg-stone-50"
+                        : "border-stone-200 hover:border-stone-300"
+                    }`}
+                  >
+                    <input {...getBgInputProps()} />
+                    <Upload className="w-8 h-8 text-stone-400 mx-auto mb-2" />
+                    <p className="text-sm text-stone-600">
+                      {isBgDragActive ? "Drop here" : "Click to upload background"}
+                    </p>
+                  </div>
+
+                  {settings.backgroundUrl ? (
+                    <div className="relative w-full aspect-video rounded-lg border border-stone-200 overflow-hidden bg-stone-900 flex items-center justify-center">
+                      <img
+                        src={settings.backgroundUrl}
+                        alt="Login Background"
+                        className="w-full h-full object-cover"
+                      />
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        onClick={removeBackground}
+                        className="absolute top-1 right-1 h-6 w-6"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="w-full aspect-video rounded-lg border border-stone-200 bg-stone-50 flex items-center justify-center">
+                      <ImageIcon className="w-10 h-10 text-stone-300" />
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}

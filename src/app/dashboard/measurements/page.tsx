@@ -419,14 +419,15 @@ export default function MeasurementsPage() {
                       {upperBodyFields.map((field) => (
                         <div key={field.key} className="space-y-1.5">
                           <Label className="font-display text-[10px] uppercase tracking-widest text-stone-400">{field.label}</Label>
-                          <div className="relative group">
-                            <Input
-                              type="text"
-                              value={(formData as Record<string, string>)[field.key] || ""}
-                              onChange={(e) => updateField(field.key, e.target.value)}
-                              className="font-display h-11 bg-stone-50 border-stone-200 rounded-xl pr-10 focus:bg-white transition-colors"
-                              placeholder="0.0"
-                            />
+                            <div className="relative group">
+                              <Input
+                                type="text"
+                                value={(formData as any)[field.key] || ""}
+                                onChange={(e) => updateField(field.key, e.target.value)}
+                                className="font-display h-11 bg-stone-50 border-stone-200 rounded-xl pr-10 focus:bg-white transition-colors"
+                                placeholder="0.0"
+                              />
+
                             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-300 text-[10px] font-display uppercase tracking-tighter">
                               {field.unit}
                             </span>
@@ -441,14 +442,15 @@ export default function MeasurementsPage() {
                       {lowerBodyFields.map((field) => (
                         <div key={field.key} className="space-y-1.5">
                           <Label className="font-display text-[10px] uppercase tracking-widest text-stone-400">{field.label}</Label>
-                          <div className="relative group">
-                            <Input
-                              type="text"
-                              value={(formData as Record<string, string>)[field.key] || ""}
-                              onChange={(e) => updateField(field.key, e.target.value)}
-                              className="font-display h-11 bg-stone-50 border-stone-200 rounded-xl pr-10 focus:bg-white transition-colors"
-                              placeholder="0.0"
-                            />
+                            <div className="relative group">
+                              <Input
+                                type="text"
+                                value={(formData as any)[field.key] || ""}
+                                onChange={(e) => updateField(field.key, e.target.value)}
+                                className="font-display h-11 bg-stone-50 border-stone-200 rounded-xl pr-10 focus:bg-white transition-colors"
+                                placeholder="0.0"
+                              />
+
                             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-300 text-[10px] font-display uppercase tracking-tighter">
                               {field.unit}
                             </span>

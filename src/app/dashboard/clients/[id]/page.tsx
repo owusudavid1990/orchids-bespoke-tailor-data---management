@@ -250,36 +250,37 @@ export default function ClientProfilePage({ params }: PageProps) {
                     <h4 className="text-sm text-stone-500 uppercase tracking-wider mb-3">
                       Upper Body
                     </h4>
-                    <div className="grid grid-cols-3 gap-3">
-                      {upperBodyFields.map((field) => {
-                        const value = (latestMeasurement as Record<string, string>)[field.key];
-                        if (!value) return null;
-                        return (
-                          <div key={field.key} className="text-center p-2 bg-stone-50 rounded">
-                            <p className="text-xs text-stone-500">{field.label}</p>
-                            <p className="text-stone-900">{value}&quot;</p>
-                          </div>
-                        );
-                      })}
+                      <div className="grid grid-cols-3 gap-3">
+                        {upperBodyFields.map((field) => {
+                          const value = (latestMeasurement as any)[field.key];
+                          if (!value) return null;
+                          return (
+                            <div key={field.key} className="text-center p-2 bg-stone-50 rounded">
+                              <p className="text-xs text-stone-500">{field.label}</p>
+                              <p className="text-stone-900">{value}&quot;</p>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                  <div>
-                    <h4 className="text-sm text-stone-500 uppercase tracking-wider mb-3">
-                      Lower Body
-                    </h4>
-                    <div className="grid grid-cols-3 gap-3">
-                      {lowerBodyFields.map((field) => {
-                        const value = (latestMeasurement as Record<string, string>)[field.key];
-                        if (!value) return null;
-                        return (
-                          <div key={field.key} className="text-center p-2 bg-stone-50 rounded">
-                            <p className="text-xs text-stone-500">{field.label}</p>
-                            <p className="text-stone-900">{value}&quot;</p>
-                          </div>
-                        );
-                      })}
+                    <div>
+                      <h4 className="text-sm text-stone-500 uppercase tracking-wider mb-3">
+                        Lower Body
+                      </h4>
+                      <div className="grid grid-cols-3 gap-3">
+                        {lowerBodyFields.map((field) => {
+                          const value = (latestMeasurement as any)[field.key];
+                          if (!value) return null;
+                          return (
+                            <div key={field.key} className="text-center p-2 bg-stone-50 rounded">
+                              <p className="text-xs text-stone-500">{field.label}</p>
+                              <p className="text-stone-900">{value}&quot;</p>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
+
                 </div>
                 <div className="mt-4 pt-4 border-t border-stone-100 flex flex-wrap gap-2">
                   <Badge variant="outline" className="capitalize">
