@@ -193,6 +193,7 @@ interface SyncItem {
   table: string;
   data: any;
   timestamp: number;
+  retries?: number;
 }
 
 const defaultUsers: User[] = [
@@ -262,6 +263,8 @@ function addToSyncQueue(item: Omit<SyncItem, 'timestamp'>) {
 }
 
 let isSyncing = false;
+const MAX_RETRIES = 3;
+
 export async function processSyncQueue() {
   if (isSyncing || typeof window === 'undefined' || !navigator.onLine) return;
   
@@ -277,21 +280,31 @@ export async function processSyncQueue() {
       const { error } = await supabase.from(item.table).upsert(snakeData);
       if (error) throw error;
     } else if (item.type === 'delete') {
-      // Soft delete in Supabase
       const { error } = await supabase.from(item.table).update({ is_deleted: true }).eq('id', item.data.id);
       if (error) throw error;
     }
 
-    // Success - remove from queue
     const updatedQueue = getStorage<SyncItem[]>(STORAGE_KEYS.SYNC_QUEUE, []);
     updatedQueue.shift();
     setStorage(STORAGE_KEYS.SYNC_QUEUE, updatedQueue);
     
     isSyncing = false;
-    // Process next item
     if (updatedQueue.length > 0) processSyncQueue();
-  } catch (error) {
-    console.error('Sync failed:', error);
+  } catch (error: any) {
+    const retries = (item.retries || 0) + 1;
+    
+    if (retries >= MAX_RETRIES) {
+      const updatedQueue = getStorage<SyncItem[]>(STORAGE_KEYS.SYNC_QUEUE, []);
+      updatedQueue.shift();
+      setStorage(STORAGE_KEYS.SYNC_QUEUE, updatedQueue);
+    } else {
+      const updatedQueue = getStorage<SyncItem[]>(STORAGE_KEYS.SYNC_QUEUE, []);
+      if (updatedQueue.length > 0) {
+        updatedQueue[0].retries = retries;
+        setStorage(STORAGE_KEYS.SYNC_QUEUE, updatedQueue);
+      }
+    }
+    
     isSyncing = false;
   }
 }
