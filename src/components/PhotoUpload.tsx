@@ -105,7 +105,7 @@ export function PhotoUpload({ photos, onChange }: PhotoUploadProps) {
                     alt={photo.label}
                     className="w-full h-full object-cover"
                   />
-                <Button
+                  <Button
                   type="button"
                   variant="destructive"
                   size="icon"

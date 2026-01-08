@@ -40,11 +40,7 @@ export default function LoginPage() {
     }
   };
 
-  if (!mounted) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a]" />
-    );
-  }
+  if (!mounted) return null;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] selection:bg-stone-800">
