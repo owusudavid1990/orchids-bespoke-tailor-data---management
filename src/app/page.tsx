@@ -15,11 +15,9 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [settings, setSettings] = useState<Settings | null>(null);
-  const [mounted, setMounted] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    setMounted(true);
     initializeStore();
     setSettings(getSettings());
   }, []);
@@ -40,10 +38,8 @@ export default function LoginPage() {
     }
   };
 
-  if (!mounted) return null;
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] selection:bg-stone-800">
+    <div className="min-h-screen flex items-center justify-center bg-white selection:bg-stone-100">
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -57,9 +53,13 @@ export default function LoginPage() {
             transition={{ delay: 0.2 }}
             className="mb-8"
           >
-            <Scissors className="w-5 h-5 text-stone-500" />
+            {settings?.logoUrl ? (
+              <img src={settings.logoUrl} alt="Logo" className="w-12 h-12 object-contain" />
+            ) : (
+              <Scissors className="w-5 h-5 text-stone-600" />
+            )}
           </motion.div>
-          <h1 className="text-sm uppercase tracking-[0.4em] text-stone-400 font-light mb-1">
+          <h1 className="text-sm uppercase tracking-[0.4em] text-stone-800 font-light mb-1">
             {settings?.companyName || "Bespoke"}
           </h1>
           <p className="text-[10px] uppercase tracking-[0.2em] text-stone-600 font-medium">
@@ -70,7 +70,7 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="space-y-10">
           <div className="space-y-6">
             <div className="space-y-1 group">
-              <Label htmlFor="username" className="text-[10px] uppercase tracking-[0.2em] text-stone-600 font-medium transition-colors group-focus-within:text-stone-400">
+              <Label htmlFor="username" className="text-[10px] uppercase tracking-[0.2em] text-stone-600 font-medium transition-colors group-focus-within:text-black">
                 Identifier
               </Label>
               <Input
@@ -78,14 +78,14 @@ export default function LoginPage() {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="h-10 bg-transparent border-0 border-b border-stone-800 focus:border-stone-500 focus:ring-0 text-white text-sm font-light transition-all rounded-none px-0 placeholder:text-stone-800"
+                className="h-10 bg-transparent border-0 border-b border-stone-200 focus:border-black focus:ring-0 text-stone-900 text-sm font-light transition-all rounded-none px-0 placeholder:text-stone-300"
                 placeholder="Username"
                 required
               />
             </div>
 
             <div className="space-y-1 group">
-              <Label htmlFor="password" className="text-[10px] uppercase tracking-[0.2em] text-stone-600 font-medium transition-colors group-focus-within:text-stone-400">
+              <Label htmlFor="password" className="text-[10px] uppercase tracking-[0.2em] text-stone-600 font-medium transition-colors group-focus-within:text-black">
                 Key
               </Label>
               <Input
@@ -93,7 +93,7 @@ export default function LoginPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="h-10 bg-transparent border-0 border-b border-stone-800 focus:border-stone-500 focus:ring-0 text-white text-sm font-light transition-all rounded-none px-0 placeholder:text-stone-800"
+                className="h-10 bg-transparent border-0 border-b border-stone-200 focus:border-black focus:ring-0 text-stone-900 text-sm font-light transition-all rounded-none px-0 placeholder:text-stone-300"
                 placeholder="Password"
                 required
               />
@@ -119,13 +119,13 @@ export default function LoginPage() {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full h-11 bg-stone-100 hover:bg-white text-black text-[10px] uppercase tracking-[0.3em] font-bold transition-all duration-300 rounded-none disabled:opacity-50"
+            className="w-full h-11 bg-black hover:bg-stone-800 text-white text-[10px] uppercase tracking-[0.3em] font-bold transition-all duration-300 rounded-none disabled:opacity-50"
           >
             {isLoading ? (
               <motion.div
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                className="w-3 h-3 border border-black border-t-transparent rounded-full"
+                className="w-3 h-3 border border-white border-t-transparent rounded-full"
               />
             ) : (
               "Authorize"
@@ -135,7 +135,7 @@ export default function LoginPage() {
           <div className="pt-4 flex justify-center">
             <button 
               type="button"
-              className="text-[9px] uppercase tracking-[0.2em] text-stone-700 hover:text-stone-500 transition-colors"
+              className="text-[9px] uppercase tracking-[0.2em] text-stone-600 hover:text-black transition-colors"
             >
               Reset Access
             </button>
@@ -143,10 +143,11 @@ export default function LoginPage() {
         </form>
 
         <footer className="mt-24 text-center">
-          <p className="text-[9px] uppercase tracking-[0.2em] text-stone-800 font-light">
+          <p className="text-[9px] uppercase tracking-[0.2em] text-stone-400 font-light">
             © {new Date().getFullYear()} {settings?.companyName || "House"}. Precision Built.
           </p>
         </footer>
+
       </motion.div>
     </div>
   );

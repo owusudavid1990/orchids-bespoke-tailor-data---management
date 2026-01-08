@@ -99,13 +99,14 @@ export function PhotoUpload({ photos, onChange }: PhotoUploadProps) {
               exit={{ opacity: 0, scale: 0.9 }}
               className="relative group border rounded-lg overflow-hidden bg-stone-50"
             >
-                <div className="aspect-square relative">
-                  <img
-                    src={photo.url}
-                    alt={photo.label}
-                    className="w-full h-full object-cover"
-                  />
-                  <Button
+              <div className="aspect-square relative">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={photo.url}
+                  alt={photo.label}
+                  className="w-full h-full object-cover"
+                />
+                <Button
                   type="button"
                   variant="destructive"
                   size="icon"
