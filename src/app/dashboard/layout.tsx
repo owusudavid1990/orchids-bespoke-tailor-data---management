@@ -34,11 +34,12 @@ const navItems = [
   { href: "/dashboard/clients", label: "Clients", icon: Users },
   { href: "/dashboard/appointments", label: "Appointments", icon: CalendarDays },
   { href: "/dashboard/measurements", label: "Measurements", icon: Ruler },
-  { href: "/dashboard/fabrics", label: "Fabrics", icon: Palette },
-  { href: "/dashboard/alterations", label: "Alterations", icon: Scissors },
-  { href: "/dashboard/jobs", label: "Job Tracking", icon: ClipboardList, adminOnly: true },
-  { href: "/dashboard/settings", label: "Settings", icon: SettingsIcon, adminOnly: true },
-];
+    { href: "/dashboard/fabrics", label: "Fabrics", icon: Palette },
+    { href: "/dashboard/alterations", label: "Alterations", icon: Scissors },
+    { href: "/dashboard/management", label: "Management", icon: Users, adminOnly: true },
+    { href: "/dashboard/jobs", label: "Job Tracking", icon: ClipboardList, adminOnly: true },
+    { href: "/dashboard/settings", label: "Settings", icon: SettingsIcon, adminOnly: true },
+  ];
 
 export default function DashboardLayout({
   children,

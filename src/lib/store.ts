@@ -150,6 +150,10 @@ export interface User {
   password: string;
   role: 'admin' | 'staff';
   name: string;
+  avatarUrl?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
   createdAt: string;
 }
 
@@ -445,6 +449,10 @@ export function deleteAlteration(id: string): void {
 
 export function getUsers(): User[] {
   return getStorage<User[]>(STORAGE_KEYS.USERS, defaultUsers);
+}
+
+export function getUserById(id: string): User | undefined {
+  return getUsers().find(u => u.id === id);
 }
 
 export function saveUser(user: User): void {
