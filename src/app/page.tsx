@@ -7,7 +7,7 @@ import { authenticateUser, initializeStore, getSettings, type Settings } from "@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Scissors, ShieldCheck } from "lucide-react";
+import { Scissors, AlertCircle } from "lucide-react";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -39,7 +39,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] selection:bg-stone-800">
+    <div className="min-h-screen flex items-center justify-center bg-white selection:bg-stone-100">
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -53,12 +53,12 @@ export default function LoginPage() {
             transition={{ delay: 0.2 }}
             className="mb-8"
           >
-            <Scissors className="w-5 h-5 text-stone-500" />
+            <Scissors className="w-5 h-5 text-stone-400" />
           </motion.div>
-          <h1 className="text-sm uppercase tracking-[0.4em] text-stone-400 font-light mb-1">
+          <h1 className="text-sm uppercase tracking-[0.4em] text-stone-800 font-light mb-1">
             {settings?.companyName || "Bespoke"}
           </h1>
-          <p className="text-[10px] uppercase tracking-[0.2em] text-stone-600 font-medium">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-stone-400 font-medium">
             Atelier Management
           </p>
         </div>
@@ -66,7 +66,7 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="space-y-10">
           <div className="space-y-6">
             <div className="space-y-1 group">
-              <Label htmlFor="username" className="text-[10px] uppercase tracking-[0.2em] text-stone-600 font-medium transition-colors group-focus-within:text-stone-400">
+              <Label htmlFor="username" className="text-[10px] uppercase tracking-[0.2em] text-stone-400 font-medium transition-colors group-focus-within:text-stone-600">
                 Identifier
               </Label>
               <Input
@@ -74,14 +74,14 @@ export default function LoginPage() {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="h-10 bg-transparent border-0 border-b border-stone-800 focus:border-stone-500 focus:ring-0 text-white text-sm font-light transition-all rounded-none px-0 placeholder:text-stone-800"
+                className="h-10 bg-transparent border-0 border-b border-stone-100 focus:border-stone-900 focus:ring-0 text-stone-900 text-sm font-light transition-all rounded-none px-0 placeholder:text-stone-300"
                 placeholder="Username"
                 required
               />
             </div>
 
             <div className="space-y-1 group">
-              <Label htmlFor="password" className="text-[10px] uppercase tracking-[0.2em] text-stone-600 font-medium transition-colors group-focus-within:text-stone-400">
+              <Label htmlFor="password" className="text-[10px] uppercase tracking-[0.2em] text-stone-400 font-medium transition-colors group-focus-within:text-stone-600">
                 Key
               </Label>
               <Input
@@ -89,7 +89,7 @@ export default function LoginPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="h-10 bg-transparent border-0 border-b border-stone-800 focus:border-stone-500 focus:ring-0 text-white text-sm font-light transition-all rounded-none px-0 placeholder:text-stone-800"
+                className="h-10 bg-transparent border-0 border-b border-stone-100 focus:border-stone-900 focus:ring-0 text-stone-900 text-sm font-light transition-all rounded-none px-0 placeholder:text-stone-300"
                 placeholder="Password"
                 required
               />
@@ -104,8 +104,8 @@ export default function LoginPage() {
                 exit={{ opacity: 0 }}
                 className="flex items-center justify-center gap-2"
               >
-                <ShieldCheck className="w-3 h-3 text-stone-600" />
-                <p className="text-[10px] uppercase tracking-[0.1em] text-stone-600">
+                <AlertCircle className="w-3 h-3 text-red-500" />
+                <p className="text-[10px] uppercase tracking-[0.1em] text-red-500">
                   {error}
                 </p>
               </motion.div>
@@ -115,13 +115,13 @@ export default function LoginPage() {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full h-11 bg-stone-100 hover:bg-white text-black text-[10px] uppercase tracking-[0.3em] font-bold transition-all duration-300 rounded-none disabled:opacity-50"
+            className="w-full h-11 bg-stone-900 hover:bg-black text-white text-[10px] uppercase tracking-[0.3em] font-bold transition-all duration-300 rounded-none disabled:opacity-50"
           >
             {isLoading ? (
               <motion.div
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                className="w-3 h-3 border border-black border-t-transparent rounded-full"
+                className="w-3 h-3 border border-white border-t-transparent rounded-full"
               />
             ) : (
               "Authorize"
@@ -131,7 +131,7 @@ export default function LoginPage() {
           <div className="pt-4 flex justify-center">
             <button 
               type="button"
-              className="text-[9px] uppercase tracking-[0.2em] text-stone-700 hover:text-stone-500 transition-colors"
+              className="text-[9px] uppercase tracking-[0.2em] text-stone-400 hover:text-stone-600 transition-colors"
             >
               Reset Access
             </button>
@@ -139,7 +139,7 @@ export default function LoginPage() {
         </form>
 
         <footer className="mt-24 text-center">
-          <p className="text-[9px] uppercase tracking-[0.2em] text-stone-800 font-light">
+          <p className="text-[9px] uppercase tracking-[0.2em] text-stone-400 font-light">
             © {new Date().getFullYear()} {settings?.companyName || "House"}. Precision Built.
           </p>
         </footer>

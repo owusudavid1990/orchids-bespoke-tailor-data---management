@@ -44,9 +44,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Upload, Trash2, User as UserIcon, Plus, ImageIcon, Save, Download, Cloud, ShieldCheck } from "lucide-react";
+import { Upload, Trash2, User as UserIcon, Plus, ImageIcon, Save, Download, Cloud, AlertCircle } from "lucide-react";
 
-  export default function SettingsPage() {
+    export default function SettingsPage() {
+
     const [settings, setSettings] = useState<Settings>({
       companyName: "",
       logoUrl: "",
@@ -558,7 +559,7 @@ import { Upload, Trash2, User as UserIcon, Plus, ImageIcon, Save, Download, Clou
           <Card className="border-stone-200">
             <CardHeader>
               <CardTitle className="text-xl flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-stone-600" />
+                <AlertCircle className="w-5 h-5 text-stone-600" />
                 Data & Security
               </CardTitle>
               <CardDescription className="font-display">
@@ -601,14 +602,15 @@ import { Upload, Trash2, User as UserIcon, Plus, ImageIcon, Save, Download, Clou
                 </Button>
               </div>
 
-              <div className="pt-4 border-t border-stone-100">
-                <div className="flex items-center gap-2 text-stone-400">
-                  <ShieldCheck className="w-4 h-4" />
-                  <p className="text-xs">
-                    Your data is securely stored locally and synced with encrypted cloud storage.
-                  </p>
+                <div className="pt-4 border-t border-stone-100">
+                  <div className="flex items-center gap-2 text-stone-400">
+                    <AlertCircle className="w-4 h-4" />
+                    <p className="text-xs">
+                      Your data is securely stored locally and synced with encrypted cloud storage.
+                    </p>
+                  </div>
                 </div>
-              </div>
+
             </CardContent>
           </Card>
         </motion.div>

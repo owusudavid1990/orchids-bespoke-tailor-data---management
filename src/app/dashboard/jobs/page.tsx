@@ -273,11 +273,11 @@ export default function JobsPage() {
 
         <TabsContent value="all" className="mt-6">
           <div className="space-y-6">
-            {(jobType === "all" || jobType === "orders") && activeOrders.length > 0 && (
-              <div className="space-y-4">
-                <h3 className="font-serif text-lg text-stone-900 flex items-center gap-2">
-                  <Shirt className="w-5 h-5" /> Suit Orders
-                </h3>
+              {(jobType === "all" || jobType === "orders") && activeOrders.length > 0 && (
+                <div className="space-y-4">
+                  <h3 className="font-serif text-lg text-stone-900 flex items-center gap-2">
+                    <Shirt className="w-5 h-5" /> Orders
+                  </h3>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   {activeOrders.map((order, index) => (
                     <motion.div

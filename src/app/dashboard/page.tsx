@@ -57,14 +57,21 @@ export default function DashboardPage() {
       color: "bg-teal-50 text-teal-600",
       href: "/dashboard/appointments",
     },
-      {
-        title: "Pending Alterations",
-        value: pendingAlterations.length,
-        icon: Scissors,
-        color: "bg-emerald-50 text-emerald-600",
-        href: "/dashboard/alterations",
-      },
-    ];
+    {
+      title: "Pending Alterations",
+      value: pendingAlterations.length,
+      icon: Scissors,
+      color: "bg-emerald-50 text-emerald-600",
+      href: "/dashboard/alterations",
+    },
+    {
+      title: "Pending Orders",
+      value: pendingOrders.length,
+      icon: Shirt,
+      color: "bg-amber-50 text-amber-600",
+      href: "/dashboard/orders",
+    },
+  ];
 
     const recentClients = clients.slice(-5).reverse();
 

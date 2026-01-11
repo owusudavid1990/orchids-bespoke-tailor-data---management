@@ -10,6 +10,7 @@ import {
   getOrdersByClient,
   getAlterationsByClient,
   getAppointmentsByClient,
+  deleteOrder,
   type Client,
   type Measurement,
   type SuitOrder,
@@ -20,6 +21,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import {
   ArrowLeft,
   User,
@@ -32,6 +44,8 @@ import {
   Calendar,
   FileText,
   Pencil,
+  Trash2,
+  Plus,
 } from "lucide-react";
 
 interface PageProps {
@@ -71,9 +85,9 @@ export default function ClientProfilePage({ params }: PageProps) {
   const [measurements, setMeasurements] = useState<Measurement[]>([]);
   const [orders, setOrders] = useState<SuitOrder[]>([]);
   const [alterations, setAlterations] = useState<Alteration[]>([]);
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
+    const [appointments, setAppointments] = useState<Appointment[]>([]);
 
-  useEffect(() => {
+  const loadData = () => {
     const clients = getClients();
     const foundClient = clients.find((c) => c.id === id);
     if (foundClient) {
@@ -83,7 +97,16 @@ export default function ClientProfilePage({ params }: PageProps) {
       setAlterations(getAlterationsByClient(id));
       setAppointments(getAppointmentsByClient(id));
     }
+  };
+
+  useEffect(() => {
+    loadData();
   }, [id]);
+
+  const handleDeleteOrder = (orderId: string) => {
+    deleteOrder(orderId);
+    loadData();
+  };
 
   if (!client) {
     return (
@@ -133,12 +156,20 @@ export default function ClientProfilePage({ params }: PageProps) {
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Clients
         </Button>
-        <Link href={`/dashboard/clients`}>
-          <Button variant="outline" className="font-display">
-            <Pencil className="w-4 h-4 mr-2" />
-            Edit Client
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link href={`/dashboard/clients/docket/${id}`}>
+            <Button variant="outline" className="font-display">
+              <FileText className="w-4 h-4 mr-2" />
+              Download Docket
+            </Button>
+          </Link>
+          <Link href={`/dashboard/clients`}>
+            <Button variant="outline" className="font-display">
+              <Pencil className="w-4 h-4 mr-2" />
+              Edit Client
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <motion.div
@@ -314,33 +345,71 @@ export default function ClientProfilePage({ params }: PageProps) {
         </TabsContent>
 
         <TabsContent value="orders" className="mt-6">
+          <div className="flex justify-end mb-4">
+            <Link href={`/dashboard/orders?clientId=${id}&new=true`}>
+              <Button size="sm" className="bg-stone-900 hover:bg-stone-800">
+                <Plus className="w-4 h-4 mr-2" />
+                Add New Order
+              </Button>
+            </Link>
+          </div>
           {orders.length > 0 ? (
             <div className="space-y-4">
               {orders.map((order) => (
                 <Card key={order.id} className="border-stone-200">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
-                      <div>
-                        <div className="flex items-center gap-3">
-                          <h4 className="text-lg text-stone-900 capitalize">
-                            {order.suitStyle.replace("-", " ")} Suit
-                          </h4>
-                          <Badge className={`${orderStatusColors[order.status]} capitalize`}>
-                            {order.status.replace("-", " ")}
-                          </Badge>
+                        <div>
+                          <div className="flex items-center gap-3">
+                            <h4 className="text-lg text-stone-900 capitalize">
+                              {order.orderName || `${order.suitStyle.replace("-", " ")} Suit`}
+                            </h4>
+                            <Badge className={`${orderStatusColors[order.status]} capitalize`}>
+                              {order.status.replace("-", " ")}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-stone-500 mt-1">
+                            {order.lapelStyle} lapel • {order.buttons} buttons • {order.ventStyle} vent
+                          </p>
+                          <p className="text-xs text-stone-400 mt-2">
+                            Due: {order.dueDate ? new Date(order.dueDate).toLocaleDateString() : "Not set"}
+                          </p>
                         </div>
-                        <p className="text-sm text-stone-500 mt-1">
-                          {order.lapelStyle} lapel • {order.buttons} buttons • {order.ventStyle} vent
-                        </p>
-                        <p className="text-xs text-stone-400 mt-2">
-                          Due: {order.dueDate ? new Date(order.dueDate).toLocaleDateString() : "Not set"}
-                        </p>
-                      </div>
-                      <Link href="/dashboard/orders">
-                        <Button variant="ghost" size="sm" className="font-display">
-                          View
-                        </Button>
-                      </Link>
+                        <div className="flex items-center gap-2">
+                          <Link href="/dashboard/orders">
+                            <Button variant="ghost" size="sm" className="font-display">
+                              View
+                            </Button>
+                          </Link>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete Order</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete this order? This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDeleteOrder(order.id)}
+                                  className="bg-red-600 hover:bg-red-700"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -350,7 +419,7 @@ export default function ClientProfilePage({ params }: PageProps) {
             <div className="text-center py-12 bg-stone-50 rounded-xl">
               <ShoppingBag className="w-12 h-12 text-stone-300 mx-auto mb-3" />
               <p className="text-stone-500">No orders placed yet</p>
-              <Link href="/dashboard/orders">
+              <Link href={`/dashboard/orders?clientId=${id}&new=true`}>
                 <Button className="mt-4 bg-stone-900 hover:bg-stone-800">
                   Create Order
                 </Button>

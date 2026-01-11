@@ -6,12 +6,16 @@ import {
   getMeasurements,
   getClients,
   getSettings,
+  getUsers,
+  getAppointmentsByClient,
   type Measurement,
   type Client,
   type Settings,
+  type User as StaffUser,
+  type Appointment,
 } from "@/lib/store";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Printer, Ruler, User, Camera, FileText } from "lucide-react";
+import { ArrowLeft, Printer, Ruler, User, Camera, FileText, Clock, BadgeCheck } from "lucide-react";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -23,6 +27,8 @@ export default function MeasurementDocketPage({ params }: PageProps) {
   const [measurement, setMeasurement] = useState<Measurement | null>(null);
   const [client, setClient] = useState<Client | null>(null);
   const [settings, setSettings] = useState<Settings | null>(null);
+  const [staff, setStaff] = useState<StaffUser | null>(null);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
 
   useEffect(() => {
     const measurements = getMeasurements();
@@ -32,6 +38,16 @@ export default function MeasurementDocketPage({ params }: PageProps) {
       const clients = getClients();
       const foundClient = clients.find((c) => c.id === found.clientId);
       setClient(foundClient || null);
+
+      if (found.assignedStaffId) {
+        const users = getUsers();
+        const foundStaff = users.find((u) => u.id === found.assignedStaffId);
+        setStaff(foundStaff || null);
+      }
+
+      if (found.clientId) {
+        setAppointments(getAppointmentsByClient(found.clientId));
+      }
     }
     setSettings(getSettings());
   }, [id]);
@@ -217,28 +233,37 @@ export default function MeasurementDocketPage({ params }: PageProps) {
                 <h3 className="text-[10px] text-stone-400 uppercase tracking-[0.2em] mb-4">
                   Record Info
                 </h3>
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-[10px] text-stone-400 uppercase">Date Measured</p>
-                    <p className="font-medium text-stone-900">
-                      {new Date(measurement.createdAt).toLocaleDateString("en-GB", {
-                        day: "2-digit",
-                        month: "long",
-                        year: "numeric",
-                      })}
-                    </p>
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-[10px] text-stone-400 uppercase">Date Measured</p>
+                      <p className="font-medium text-stone-900">
+                        {new Date(measurement.createdAt).toLocaleDateString("en-GB", {
+                          day: "2-digit",
+                          month: "long",
+                          year: "numeric",
+                        })}
+                      </p>
+                    </div>
+                    {staff && (
+                      <div>
+                        <p className="text-[10px] text-stone-400 uppercase">Assigned Staff</p>
+                        <p className="text-stone-900 font-medium flex items-center gap-1.5">
+                          <BadgeCheck className="w-3.5 h-3.5 text-stone-400" />
+                          {staff.name}
+                        </p>
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-[10px] text-stone-400 uppercase">Last Updated</p>
+                      <p className="text-stone-600 text-sm">
+                        {new Date(measurement.updatedAt).toLocaleDateString("en-GB", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-[10px] text-stone-400 uppercase">Last Updated</p>
-                    <p className="text-stone-600 text-sm">
-                      {new Date(measurement.updatedAt).toLocaleDateString("en-GB", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </p>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -326,7 +351,47 @@ export default function MeasurementDocketPage({ params }: PageProps) {
             </div>
           )}
 
-          {/* Notes */}
+            {/* Timeline */}
+            <div className="mb-10">
+              <h3 className="text-[10px] text-stone-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                <Clock className="w-3 h-3" /> Measurement Timeline
+              </h3>
+              <div className="border-t border-stone-100 pt-6">
+                <div className="space-y-4">
+                  <div className="flex items-start gap-4">
+                    <div className="text-[10px] text-stone-400 w-24 pt-1">
+                      {new Date(measurement.createdAt).toLocaleDateString()}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-stone-900">Record Created</p>
+                      <p className="text-[10px] text-stone-400 uppercase">Initial Measurement Session</p>
+                    </div>
+                  </div>
+                  {appointments.map((app, index) => (
+                    <div key={index} className="flex items-start gap-4">
+                      <div className="text-[10px] text-stone-400 w-24 pt-1">
+                        {new Date(app.date).toLocaleDateString()}
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-stone-900">Appointment: {app.type}</p>
+                        <p className="text-[10px] text-stone-400 uppercase">{app.status}</p>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="flex items-start gap-4">
+                    <div className="text-[10px] text-stone-400 w-24 pt-1">
+                      {new Date(measurement.updatedAt).toLocaleDateString()}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-stone-900">Last Activity</p>
+                      <p className="text-[10px] text-stone-400 uppercase">Record Updated</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Notes */}
           {measurement.notes && (
             <div className="mb-10">
               <h3 className="text-[10px] text-stone-400 uppercase tracking-[0.2em] mb-2">
