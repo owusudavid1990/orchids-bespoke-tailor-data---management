@@ -3,11 +3,12 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { authenticateUser, initializeStore, getSettings, type Settings } from "@/lib/store";
+import { signIn, initializeStore, getSettings, type Settings } from "@/lib/store";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Scissors, AlertCircle } from "lucide-react";
+import { Scissors, AlertCircle, UserPlus } from "lucide-react";
+import Link from "next/link";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -27,13 +28,16 @@ export default function LoginPage() {
     setError("");
     setIsLoading(true);
 
-    await new Promise((resolve) => setTimeout(resolve, 800));
-
-    const user = authenticateUser(username, password);
-    if (user) {
-      router.push("/dashboard");
-    } else {
-      setError("Invalid credentials");
+    try {
+      const user = await signIn(username, password);
+      if (user) {
+        router.push("/dashboard");
+      } else {
+        setError("Invalid credentials");
+        setIsLoading(false);
+      }
+    } catch (err: any) {
+      setError(err.message || "Authorization failed");
       setIsLoading(false);
     }
   };
@@ -128,14 +132,22 @@ export default function LoginPage() {
             )}
           </Button>
 
-          <div className="pt-4 flex justify-center">
+          <div className="pt-4 flex flex-col items-center gap-3">
+            <Link 
+              href="/register"
+              className="text-[9px] uppercase tracking-[0.2em] text-stone-500 hover:text-stone-900 transition-colors flex items-center gap-1.5"
+            >
+              <UserPlus className="w-3 h-3" />
+              Request Access
+            </Link>
             <button 
               type="button"
-              className="text-[9px] uppercase tracking-[0.2em] text-stone-400 hover:text-stone-600 transition-colors"
+              className="text-[9px] uppercase tracking-[0.2em] text-stone-300 hover:text-stone-400 transition-colors"
             >
               Reset Access
             </button>
           </div>
+
         </form>
 
         <footer className="mt-24 text-center">

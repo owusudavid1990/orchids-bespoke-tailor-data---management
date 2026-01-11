@@ -8,10 +8,13 @@ import {
   saveAppointment,
   deleteAppointment,
   saveClient,
-  generateId,
-  type Appointment,
-  type Client,
-} from "@/lib/store";
+    getCurrentUser,
+    getUsers,
+    generateId,
+    type Appointment,
+    type Client,
+    type User as AppUser,
+  } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -49,11 +52,11 @@ import {
   Trash2,
   CalendarDays,
   Clock,
-  ChevronLeft,
-  ChevronRight,
-  User,
-  UserPlus,
-} from "lucide-react";
+    ChevronLeft,
+    ChevronRight,
+    User as LucideUser,
+    UserPlus,
+  } from "lucide-react";
 
 const appointmentTypes = [
   { value: "consultation", label: "Consultation", color: "bg-blue-50 text-blue-700" },
@@ -82,6 +85,7 @@ const defaultAppointment: Omit<Appointment, "id" | "createdAt" | "updatedAt"> = 
   date: "",
   time: "10:00",
   duration: 60,
+  assignedStaffId: "",
   notes: "",
   status: "scheduled",
 };
@@ -89,6 +93,8 @@ const defaultAppointment: Omit<Appointment, "id" | "createdAt" | "updatedAt"> = 
 export default function AppointmentsPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
+  const [users, setUsers] = useState<AppUser[]>([]);
+  const [currentUser, setCurrentUser] = useState<AppUser | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [viewMode, setViewMode] = useState<"calendar" | "list">("calendar");
@@ -103,8 +109,19 @@ export default function AppointmentsPage() {
   }, []);
 
   const loadData = () => {
-    setAppointments(getAppointments());
-    setClients(getClients());
+    const user = getCurrentUser();
+    setCurrentUser(user);
+    const allAppointments = getAppointments();
+    const allClients = getClients();
+
+    if (user?.role === "staff") {
+      setAppointments(allAppointments.filter(a => a.assignedStaffId === user.id));
+      setClients(allClients.filter(c => c.assignedStaffId === user.id));
+    } else {
+      setAppointments(allAppointments);
+      setClients(allClients);
+    }
+    setUsers(getUsers());
   };
 
   const getClientName = (clientId: string) => {
@@ -144,9 +161,16 @@ export default function AppointmentsPage() {
     if (!formData.clientId || !formData.date) return;
 
     const now = new Date().toISOString();
+    
+    // Auto-assign to current staff if they are creating the appointment
+    const assignedStaffId = (currentUser?.role === "staff" && !editingAppointment)
+      ? currentUser.id
+      : formData.assignedStaffId;
+
     const appointment: Appointment = {
       id: editingAppointment?.id || generateId(),
       ...formData,
+      assignedStaffId,
       createdAt: editingAppointment?.createdAt || now,
       updatedAt: now,
     };
@@ -412,23 +436,46 @@ export default function AppointmentsPage() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label className="font-display text-xs uppercase tracking-widest text-stone-400">Duration</Label>
-                  <Select
-                    value={formData.duration.toString()}
-                    onValueChange={(value) => updateField("duration", parseInt(value))}
-                  >
-                    <SelectTrigger className="font-display h-12 rounded-xl bg-stone-50 border-stone-200">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl border-stone-100 shadow-xl">
-                      <SelectItem value="30" className="font-display">30 minutes</SelectItem>
-                      <SelectItem value="60" className="font-display">1 hour</SelectItem>
-                      <SelectItem value="90" className="font-display">1.5 hours</SelectItem>
-                      <SelectItem value="120" className="font-display">2 hours</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                  <div className="space-y-2">
+                    <Label className="font-display text-xs uppercase tracking-widest text-stone-400">Duration</Label>
+                    <Select
+                      value={formData.duration.toString()}
+                      onValueChange={(value) => updateField("duration", parseInt(value))}
+                    >
+                      <SelectTrigger className="font-display h-12 rounded-xl bg-stone-50 border-stone-200">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl border-stone-100 shadow-xl">
+                        <SelectItem value="30" className="font-display">30 minutes</SelectItem>
+                        <SelectItem value="60" className="font-display">1 hour</SelectItem>
+                        <SelectItem value="90" className="font-display">1.5 hours</SelectItem>
+                        <SelectItem value="120" className="font-display">2 hours</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {currentUser?.role === "admin" && (
+                    <div className="space-y-2">
+                      <Label className="font-display text-xs uppercase tracking-widest text-stone-400">Assign To</Label>
+                      <Select
+                        value={formData.assignedStaffId || "unassigned"}
+                        onValueChange={(value) => updateField("assignedStaffId", value === "unassigned" ? "" : value)}
+                      >
+                        <SelectTrigger className="font-display h-12 rounded-xl bg-stone-50 border-stone-200">
+                          <SelectValue placeholder="Select staff member" />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl border-stone-100 shadow-xl">
+                          <SelectItem value="unassigned" className="font-display">Unassigned</SelectItem>
+                          {users.filter(u => u.role === "staff").map((staff) => (
+                            <SelectItem key={staff.id} value={staff.id} className="font-display">
+                              {staff.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
 
                 <div className="space-y-2">
                   <Label className="font-display text-xs uppercase tracking-widest text-stone-400">Notes</Label>
@@ -770,9 +817,9 @@ export default function AppointmentsPage() {
             {filteredAppointments.filter(
               (a) => new Date(a.date) >= new Date() && a.status !== "cancelled" && a.status !== "completed"
             ).length === 0 ? (
-              <div className="text-center py-12 bg-stone-50 rounded-2xl border border-stone-100">
-                <User className="w-10 h-10 text-stone-200 mx-auto mb-4" />
-                <p className="text-stone-400 font-display uppercase tracking-widest text-xs">
+                <div className="text-center py-12 bg-stone-50 rounded-2xl border border-stone-100">
+                  <LucideUser className="w-10 h-10 text-stone-200 mx-auto mb-4" />
+                  <p className="text-stone-400 font-display uppercase tracking-widest text-xs">
                   Your agenda is clear
                 </p>
               </div>

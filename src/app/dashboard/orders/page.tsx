@@ -8,15 +8,16 @@ import {
   getClients,
   getMeasurements,
   getFabrics,
-  getUsers,
-  saveOrder,
-  deleteOrder,
-  generateId,
-  type SuitOrder,
-  type Client,
-  type Measurement,
-  type FabricSelection,
-  type User } from
+    getUsers,
+    saveOrder,
+    deleteOrder,
+    generateId,
+    getCurrentUser,
+    type SuitOrder,
+    type Client,
+    type Measurement,
+    type FabricSelection,
+    type User } from
 "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -94,6 +95,7 @@ function OrdersPageContent() {
   const [measurements, setMeasurements] = useState<Measurement[]>([]);
   const [fabrics, setFabrics] = useState<FabricSelection[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -115,8 +117,19 @@ function OrdersPageContent() {
   }, [searchParams]);
 
   const loadData = () => {
-    setOrders(getOrders());
-    setClients(getClients());
+    const user = getCurrentUser();
+    setCurrentUser(user);
+    const allOrders = getOrders();
+    const allClients = getClients();
+    
+    if (user?.role === "staff") {
+      setOrders(allOrders.filter(o => o.assignedStaffId === user.id));
+      setClients(allClients.filter(c => c.assignedStaffId === user.id));
+    } else {
+      setOrders(allOrders);
+      setClients(allClients);
+    }
+    
     setMeasurements(getMeasurements());
     setFabrics(getFabrics());
     setUsers(getUsers());
@@ -155,23 +168,29 @@ function OrdersPageContent() {
   fabrics.filter((f) => f.clientId === formData.clientId) :
   [];
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.clientId) return;
+    const handleSubmit = (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!formData.clientId) return;
+  
+      const now = new Date().toISOString();
+      
+      // Auto-assign to current staff if they are creating the order
+      const assignedStaffId = (currentUser?.role === "staff" && !editingOrder)
+        ? currentUser.id
+        : (formData.assignedStaffId === "unassigned" ? "" : formData.assignedStaffId);
 
-    const now = new Date().toISOString();
-    const order: SuitOrder = {
-      id: editingOrder?.id || generateId(),
-      ...formData,
-      assignedStaffId: formData.assignedStaffId === "unassigned" ? "" : formData.assignedStaffId,
-      createdAt: editingOrder?.createdAt || now,
-      updatedAt: now
+      const order: SuitOrder = {
+        id: editingOrder?.id || generateId(),
+        ...formData,
+        assignedStaffId,
+        createdAt: editingOrder?.createdAt || now,
+        updatedAt: now
+      };
+      saveOrder(order);
+      loadData();
+      resetForm();
+      setIsDialogOpen(false);
     };
-    saveOrder(order);
-    loadData();
-    resetForm();
-    setIsDialogOpen(false);
-  };
 
   const handleEdit = (order: SuitOrder) => {
     setEditingOrder(order);
@@ -353,27 +372,29 @@ function OrdersPageContent() {
                         />
                       </div>
 
-                      <div className="space-y-2">
-                        <Label className="font-display flex items-center gap-2 text-stone-600">
-                          <UserIcon className="w-4 h-4 text-stone-400" />
-                          Assign To
-                        </Label>
-                        <Select
-                          value={formData.assignedStaffId}
-                          onValueChange={(value) => updateField("assignedStaffId", value)}>
-                          <SelectTrigger className="font-display h-11 border-stone-200 focus:ring-stone-200">
-                            <SelectValue placeholder="Select staff member" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="unassigned">Unassigned</SelectItem>
-                            {staffMembers.map((staff) => (
-                              <SelectItem key={staff.id} value={staff.id}>
-                                {staff.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
+                        {currentUser?.role === "admin" && (
+                          <div className="space-y-2">
+                            <Label className="font-display flex items-center gap-2 text-stone-600">
+                              <UserIcon className="w-4 h-4 text-stone-400" />
+                              Assign To
+                            </Label>
+                            <Select
+                              value={formData.assignedStaffId}
+                              onValueChange={(value) => updateField("assignedStaffId", value)}>
+                              <SelectTrigger className="font-display h-11 border-stone-200 focus:ring-stone-200">
+                                <SelectValue placeholder="Select staff member" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="unassigned">Unassigned</SelectItem>
+                                {staffMembers.map((staff) => (
+                                  <SelectItem key={staff.id} value={staff.id}>
+                                    {staff.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
 
                       {editingOrder && (
                         <div className="space-y-2">

@@ -7,7 +7,10 @@ import {
   saveClient,
   deleteClient,
   generateId,
+  getCurrentUser,
+  getUsers,
   type Client,
+  type User as AppUser,
 } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +25,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -32,11 +42,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Plus, Search, Pencil, Trash2, User, Phone, Mail, MapPin, Eye } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, User, Phone, Mail, MapPin, Eye, Shield } from "lucide-react";
 import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 
 export default function ClientsPage() {
   const [clients, setClients] = useState<Client[]>([]);
+  const [currentUser, setCurrentUser] = useState<AppUser | null>(null);
+  const [allUsers, setAllUsers] = useState<AppUser[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
@@ -46,14 +59,24 @@ export default function ClientsPage() {
     phone: "",
     address: "",
     notes: "",
+    assignedStaffId: "",
   });
 
   useEffect(() => {
-    loadClients();
+    loadData();
   }, []);
 
-  const loadClients = () => {
-    setClients(getClients());
+  const loadData = () => {
+    const user = getCurrentUser();
+    setCurrentUser(user);
+    const allClients = getClients();
+    
+    if (user?.role === "staff") {
+      setClients(allClients.filter(c => c.assignedStaffId === user.id));
+    } else {
+      setClients(allClients);
+      setAllUsers(getUsers());
+    }
   };
 
   const filteredClients = clients.filter(
@@ -66,14 +89,21 @@ export default function ClientsPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const now = new Date().toISOString();
+    
+    // Auto-assign to current staff if they are creating the client
+    const assignedStaffId = currentUser?.role === "staff" && !editingClient 
+      ? currentUser.id 
+      : formData.assignedStaffId;
+
     const client: Client = {
       id: editingClient?.id || generateId(),
       ...formData,
+      assignedStaffId,
       createdAt: editingClient?.createdAt || now,
       updatedAt: now,
     };
     saveClient(client);
-    loadClients();
+    loadData();
     resetForm();
     setIsDialogOpen(false);
   };
@@ -86,13 +116,14 @@ export default function ClientsPage() {
       phone: client.phone,
       address: client.address,
       notes: client.notes,
+      assignedStaffId: client.assignedStaffId || "",
     });
     setIsDialogOpen(true);
   };
 
   const handleDelete = (id: string) => {
     deleteClient(id);
-    loadClients();
+    loadData();
   };
 
   const resetForm = () => {
@@ -103,7 +134,13 @@ export default function ClientsPage() {
       phone: "",
       address: "",
       notes: "",
+      assignedStaffId: "",
     });
+  };
+
+  const getStaffName = (id?: string) => {
+    if (!id) return null;
+    return allUsers.find(u => u.id === id)?.name || "Unknown Staff";
   };
 
   return (
@@ -196,22 +233,47 @@ export default function ClientsPage() {
                   rows={2}
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="notes" className="font-display">
-                  Notes
-                </Label>
-                <Textarea
-                  id="notes"
-                  value={formData.notes}
-                  onChange={(e) =>
-                    setFormData({ ...formData, notes: e.target.value })
-                  }
-                  className="resize-none"
-                  rows={3}
-                  placeholder="Any special preferences or notes..."
-                />
-              </div>
-              <div className="flex gap-3 pt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="notes" className="font-display">
+                    Notes
+                  </Label>
+                  <Textarea
+                    id="notes"
+                    value={formData.notes}
+                    onChange={(e) =>
+                      setFormData({ ...formData, notes: e.target.value })
+                    }
+                    className="resize-none"
+                    rows={3}
+                    placeholder="Any special preferences or notes..."
+                  />
+                </div>
+
+                {currentUser?.role === "admin" && (
+                  <div className="space-y-2">
+                    <Label htmlFor="assignedStaff" className="font-display">
+                      Assign Staff Member
+                    </Label>
+                    <Select
+                      value={formData.assignedStaffId}
+                      onValueChange={(value) => setFormData({ ...formData, assignedStaffId: value })}
+                    >
+                      <SelectTrigger id="assignedStaff">
+                        <SelectValue placeholder="Select staff member" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">No Assignment</SelectItem>
+                        {allUsers.filter(u => u.role === "staff").map(user => (
+                          <SelectItem key={user.id} value={user.id}>
+                            {user.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                <div className="flex gap-3 pt-4">
                 <Button
                   type="button"
                   variant="outline"

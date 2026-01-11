@@ -9,6 +9,7 @@ export interface Client {
   phone: string;
   address: string;
   notes: string;
+  assignedStaffId?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -150,13 +151,19 @@ export interface User {
   password: string;
   role: 'admin' | 'staff';
   name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  staffId?: string;
+  department?: string;
+  notes?: string;
+  isActive: boolean;
   createdAt: string;
 }
 
 export interface Settings {
   companyName: string;
   logoUrl: string;
-  backgroundUrl: string;
   address: string;
   phone: string;
   email: string;
@@ -171,6 +178,7 @@ export interface Appointment {
   duration: number;
   notes: string;
   status: 'scheduled' | 'confirmed' | 'completed' | 'cancelled';
+  assignedStaffId?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -199,10 +207,12 @@ interface SyncItem {
 const defaultUsers: User[] = [
   {
     id: '1',
-    username: 'admin',
-    password: 'admin123',
+    username: 'jankstailoring@gmail.com',
+    password: 'JANKs@24611',
     role: 'admin',
     name: 'Administrator',
+    email: 'jankstailoring@gmail.com',
+    isActive: true,
     createdAt: new Date().toISOString(),
   },
   {
@@ -211,6 +221,7 @@ const defaultUsers: User[] = [
     password: 'staff123',
     role: 'staff',
     name: 'Staff Member',
+    isActive: true,
     createdAt: new Date().toISOString(),
   },
 ];
@@ -218,7 +229,6 @@ const defaultUsers: User[] = [
 const defaultSettings: Settings = {
   companyName: 'Bespoke Tailoring House',
   logoUrl: '',
-  backgroundUrl: '',
   address: '',
   phone: '',
   email: '',
@@ -248,11 +258,59 @@ function toSnakeCase(obj: any): any {
   const result: any = {};
   for (const key in obj) {
     if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      // Avoid converting nested objects that should stay as JSONB (like measurements array)
+      if (key === 'measurements' && Array.isArray(obj[key])) {
+        result[key] = obj[key];
+        continue;
+      }
       const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
       result[snakeKey] = toSnakeCase(obj[key]);
     }
   }
   return result;
+}
+
+export async function signIn(username: string, password: string): Promise<User | null> {
+  const users = getUsers();
+  const user = users.find(u => u.username === username && u.password === password);
+  if (user) {
+    if (!user.isActive) {
+      throw new Error("Account is deactivated");
+    }
+    setStorage(STORAGE_KEYS.CURRENT_USER, user);
+    return user;
+  }
+  return null;
+}
+
+export async function signUp(userData: Partial<User>): Promise<User> {
+  const newUser: User = {
+    id: generateId(),
+    username: userData.username!,
+    password: userData.password!,
+    name: userData.name!,
+    role: userData.role as 'admin' | 'staff',
+    email: userData.email,
+    phone: userData.phone,
+    address: userData.address,
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    ...userData
+  };
+  
+  saveUser(newUser);
+  return newUser;
+}
+
+export function authenticateUser(username: string, password: string): User | null {
+  const users = getUsers();
+  const user = users.find(u => u.username === username && u.password === password);
+  if (user) {
+    if (!user.isActive) return null;
+    setStorage(STORAGE_KEYS.CURRENT_USER, user);
+    return user;
+  }
+  return null;
 }
 
 function addToSyncQueue(item: Omit<SyncItem, 'timestamp'>) {
@@ -465,16 +523,6 @@ export function deleteUser(id: string): void {
   addToSyncQueue({ type: 'delete', table: 'app_users', data: { id } });
 }
 
-export function authenticateUser(username: string, password: string): User | null {
-  const users = getUsers();
-  const user = users.find(u => u.username === username && u.password === password);
-  if (user) {
-    setStorage(STORAGE_KEYS.CURRENT_USER, user);
-    return user;
-  }
-  return null;
-}
-
 export function getCurrentUser(): User | null {
   return getStorage<User | null>(STORAGE_KEYS.CURRENT_USER, null);
 }
@@ -559,3 +607,4 @@ export function getAllData(): any {
   });
   return data;
 }
+

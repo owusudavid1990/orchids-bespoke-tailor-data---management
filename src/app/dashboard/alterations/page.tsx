@@ -10,10 +10,11 @@ import {
   deleteAlteration,
   saveClient,
   generateId,
+  getCurrentUser,
   type Alteration,
   type AlterationMeasurement,
   type Client,
-  type User,
+  type User as AppUser,
 } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,6 +49,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Plus, Search, Pencil, Trash2, Scissors, Calendar, UserCheck, UserPlus, FileText, Minus } from "lucide-react";
 import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 
 const statusColors: Record<string, string> = {
   pending: "bg-yellow-50 text-yellow-700",
@@ -114,7 +116,8 @@ const defaultAlteration: Omit<Alteration, "id" | "createdAt" | "updatedAt"> = {
 export default function AlterationsPage() {
   const [alterations, setAlterations] = useState<Alteration[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<AppUser[]>([]);
+  const [currentUser, setCurrentUser] = useState<AppUser | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -129,8 +132,18 @@ export default function AlterationsPage() {
   }, []);
 
   const loadData = () => {
-    setAlterations(getAlterations());
-    setClients(getClients());
+    const user = getCurrentUser();
+    setCurrentUser(user);
+    const allAlterations = getAlterations();
+    const allClients = getClients();
+    
+    if (user?.role === "staff") {
+      setAlterations(allAlterations.filter(a => a.assignedStaffId === user.id));
+      setClients(allClients.filter(c => c.assignedStaffId === user.id));
+    } else {
+      setAlterations(allAlterations);
+      setClients(allClients);
+    }
     setUsers(getUsers());
   };
 
@@ -161,9 +174,16 @@ export default function AlterationsPage() {
     if (!formData.clientId || !formData.garmentType) return;
 
     const now = new Date().toISOString();
+    
+    // Auto-assign to current staff if they are creating the alteration
+    const assignedStaffId = (currentUser?.role === "staff" && !editingAlteration)
+      ? currentUser.id
+      : formData.assignedStaffId;
+
     const alteration: Alteration = {
       id: editingAlteration?.id || generateId(),
       ...formData,
+      assignedStaffId,
       createdAt: editingAlteration?.createdAt || now,
       updatedAt: now,
     };
@@ -272,6 +292,7 @@ export default function AlterationsPage() {
       notes: "",
       createdAt: now,
       updatedAt: now,
+      assignedStaffId: currentUser?.role === "staff" ? currentUser.id : undefined,
     };
     
     saveClient(newClient);
@@ -589,38 +610,38 @@ export default function AlterationsPage() {
                 </div>
               </div>
 
-<div className="space-y-2">
-                  <Label className="font-display">Notes</Label>
-                  <Textarea
-                    value={formData.notes}
-                    onChange={(e) => updateField("notes", e.target.value)}
-                    className="resize-none"
-                    rows={2}
-                    placeholder="Additional notes..."
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label className="font-display">Notes</Label>
+                <Textarea
+                  value={formData.notes}
+                  onChange={(e) => updateField("notes", e.target.value)}
+                  className="resize-none"
+                  rows={2}
+                  placeholder="Additional notes..."
+                />
+              </div>
 
-                <div className="space-y-2">
-                  <Label className="font-display">Assign Staff</Label>
-<Select
-                      value={formData.assignedStaffId || "unassigned"}
-                      onValueChange={(value) => updateField("assignedStaffId", value === "unassigned" ? "" : value)}
-                    >
-                      <SelectTrigger className="font-display">
-                        <SelectValue placeholder="Select staff member" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="unassigned">Unassigned</SelectItem>
-                        {staffMembers.map((staff) => (
-                          <SelectItem key={staff.id} value={staff.id}>
-                            {staff.name} ({staff.role})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                </div>
+              <div className="space-y-2">
+                <Label className="font-display">Assign Staff</Label>
+                <Select
+                  value={formData.assignedStaffId || "unassigned"}
+                  onValueChange={(value) => updateField("assignedStaffId", value === "unassigned" ? "" : value)}
+                >
+                  <SelectTrigger className="font-display">
+                    <SelectValue placeholder="Select staff member" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unassigned">Unassigned</SelectItem>
+                    {staffMembers.map((staff) => (
+                      <SelectItem key={staff.id} value={staff.id}>
+                        {staff.name} ({staff.role})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-                {editingAlteration && (
+              {editingAlteration && (
                 <div className="space-y-2">
                   <Label className="font-display">Status</Label>
                   <Select
@@ -735,25 +756,25 @@ export default function AlterationsPage() {
                           </p>
                         </div>
                       </div>
-<div className="flex gap-1">
-                          <Link href={`/dashboard/alterations/docket/${alteration.id}`}>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-stone-500 hover:text-emerald-600"
-                            >
-                              <FileText className="w-4 h-4" />
-                            </Button>
-                          </Link>
+                      <div className="flex gap-1">
+                        <Link href={`/dashboard/alterations/docket/${alteration.id}`}>
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => handleEdit(alteration)}
-                            className="h-8 w-8 text-stone-500 hover:text-stone-900"
+                            className="h-8 w-8 text-stone-500 hover:text-emerald-600"
                           >
-                            <Pencil className="w-4 h-4" />
+                            <FileText className="w-4 h-4" />
                           </Button>
-                          <AlertDialog>
+                        </Link>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEdit(alteration)}
+                          className="h-8 w-8 text-stone-500 hover:text-stone-900"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button
                               variant="ghost"

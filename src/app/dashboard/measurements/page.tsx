@@ -11,13 +11,14 @@ import {
   getTemplates,
   saveTemplate,
   deleteTemplate,
-  generateId,
-  type Measurement,
-  type Client,
-  type User,
-  type MeasurementTemplate,
-  type MeasurementField,
-} from "@/lib/store";
+    getCurrentUser,
+    generateId,
+    type Measurement,
+    type Client,
+    type User as AppUser,
+    type MeasurementTemplate,
+    type MeasurementField,
+  } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -49,7 +50,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Search, Pencil, Trash2, Ruler, User as UserIcon, Camera, Image as ImageIcon, ArrowUp, ArrowDown, Save, FileText, UserCheck, Shirt, Scissors } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Ruler, User as LucideUser, Camera, Image as ImageIcon, ArrowUp, ArrowDown, Save, FileText, UserCheck, Shirt, Scissors } from "lucide-react";
 import Link from "next/link";
 import { PhotoUpload } from "@/components/PhotoUpload";
 
@@ -124,7 +125,8 @@ export default function MeasurementsPage() {
   const [measurements, setMeasurements] = useState<Measurement[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [templates, setTemplates] = useState<MeasurementTemplate[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<AppUser[]>([]);
+  const [currentUser, setCurrentUser] = useState<AppUser | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedClient, setSelectedClient] = useState<string>("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -137,8 +139,19 @@ export default function MeasurementsPage() {
   }, []);
 
   const loadData = () => {
-    setMeasurements(getMeasurements());
-    setClients(getClients());
+    const user = getCurrentUser();
+    setCurrentUser(user);
+    const allMeasurements = getMeasurements();
+    const allClients = getClients();
+
+    if (user?.role === "staff") {
+      setMeasurements(allMeasurements.filter(m => m.assignedStaffId === user.id));
+      setClients(allClients.filter(c => c.assignedStaffId === user.id));
+    } else {
+      setMeasurements(allMeasurements);
+      setClients(allClients);
+    }
+    
     setTemplates(getTemplates());
     setUsers(getUsers());
   };
@@ -162,9 +175,16 @@ export default function MeasurementsPage() {
     if (!formData.clientId) return;
 
     const now = new Date().toISOString();
+    
+    // Auto-assign to current staff if they are creating the record
+    const assignedStaffId = (currentUser?.role === "staff" && !editingMeasurement)
+      ? currentUser.id
+      : formData.assignedStaffId;
+
     const measurement: Measurement = {
       id: editingMeasurement?.id || generateId(),
       ...formData,
+      assignedStaffId,
       createdAt: editingMeasurement?.createdAt || now,
       updatedAt: now,
     };
