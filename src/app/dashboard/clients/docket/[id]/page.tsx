@@ -159,17 +159,24 @@ export default function ClientDocketPage({ params }: PageProps) {
 
         <div className="print-area bg-white border border-stone-200 rounded-xl p-8 shadow-sm">
           {/* Header */}
-          <div className="border-b-2 border-stone-900 pb-6 mb-8">
-            <div className="flex items-start justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-stone-900 tracking-tight uppercase">
-                  Client Profile Docket
-                </h1>
-                <p className="text-stone-500 mt-1 text-sm tracking-wide uppercase">
-                  {settings?.companyName || "Bespoke Tailoring House"}
-                </p>
-              </div>
-              <div className="text-right">
+            <div className="border-b-2 border-stone-900 pb-6 mb-8">
+              <div className="flex items-start justify-between">
+                <div className="flex gap-6 items-start">
+                  {settings?.logoUrl && (
+                    <div className="w-16 h-16 bg-stone-50 rounded-lg border border-stone-100 flex items-center justify-center overflow-hidden p-2">
+                      <img src={settings.logoUrl} alt="Logo" className="max-w-full max-h-full object-contain" />
+                    </div>
+                  )}
+                  <div>
+                    <h1 className="text-3xl font-bold text-stone-900 tracking-tight uppercase">
+                      Client Profile Docket
+                    </h1>
+                    <p className="text-stone-500 mt-1 text-sm tracking-wide uppercase">
+                      {settings?.companyName || "Bespoke Tailoring House"}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
                 <div className="inline-block px-4 py-2 bg-stone-100 rounded-lg">
                   <p className="text-[10px] text-stone-500 uppercase tracking-widest">Client ID</p>
                   <p className="text-lg font-mono font-bold text-stone-900">

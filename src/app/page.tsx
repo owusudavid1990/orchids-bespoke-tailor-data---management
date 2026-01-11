@@ -53,7 +53,13 @@ export default function LoginPage() {
             transition={{ delay: 0.2 }}
             className="mb-8"
           >
-            <Scissors className="w-5 h-5 text-stone-400" />
+            {settings?.logoUrl ? (
+              <div className="w-16 h-16 bg-white rounded-xl shadow-sm border border-stone-100 flex items-center justify-center overflow-hidden p-3">
+                <img src={settings.logoUrl} alt="Logo" className="max-w-full max-h-full object-contain" />
+              </div>
+            ) : (
+              <Scissors className="w-5 h-5 text-stone-400" />
+            )}
           </motion.div>
           <h1 className="text-sm uppercase tracking-[0.4em] text-stone-800 font-light mb-1">
             {settings?.companyName || "Bespoke"}
