@@ -207,11 +207,10 @@ interface SyncItem {
 const defaultUsers: User[] = [
   {
     id: '1',
-    username: 'jankstailoring@gmail.com',
-    password: 'JANKs@24611',
+    username: 'admin',
+    password: 'admin123',
     role: 'admin',
     name: 'Administrator',
-    email: 'jankstailoring@gmail.com',
     isActive: true,
     createdAt: new Date().toISOString(),
   },
