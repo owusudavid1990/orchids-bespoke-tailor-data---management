@@ -208,7 +208,7 @@ const defaultUsers: User[] = [
   {
     id: '1',
     username: 'admin',
-    password: 'admin123',
+    password: 'admin2025',
     role: 'admin',
     name: 'Administrator',
     isActive: true,
@@ -217,7 +217,7 @@ const defaultUsers: User[] = [
   {
     id: '2',
     username: 'staff',
-    password: 'staff123',
+    password: 'staff2025',
     role: 'staff',
     name: 'Staff Member',
     isActive: true,
